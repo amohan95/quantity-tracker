@@ -1,4 +1,4 @@
-.tiles div:not(.loading) {
+.tiles > div:not(.active) {
 	border-radius: 5px;
 	border: solid 1px #999999;
 	background: linear-gradient(top, white, #EEEEEE);
@@ -6,14 +6,30 @@
     background: -moz-linear-gradient(top, white, #EEEEEE);
     background: -ms-linear-gradient(top, white, #EEEEEE);
     background: -o-linear-gradient(top, white, #EEEEEE);
-    padding: 4px;
     margin: 5px;
-    display:inline-block;
-    min-width:20%;
+    width:20%;
     text-align:center;
+}
+.tiles div:not(.active) {
     cursor:pointer;
 }
 
+.tiles .active{
+    border-radius: 5px;
+    border: solid 5px #999999;
+    background: linear-gradient(top, white, #EEEEEE);
+    background: -webkit-linear-gradient(top, white, #EEEEEE);
+    background: -moz-linear-gradient(top, white, #EEEEEE);
+    background: -ms-linear-gradient(top, white, #EEEEEE);
+    background: -o-linear-gradient(top, white, #EEEEEE);
+    margin: 5px;
+    width:20%;
+    text-align:center;
+}
+
+.tiles div h3 {
+    padding-bottom:10px;
+}
 .tiles li:not(.loading){
     list-style:none;
-};
+}

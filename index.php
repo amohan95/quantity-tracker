@@ -24,14 +24,20 @@
 		}
 	</style>
 </head>
-
+<nav class="navbar navbar-default" role="navigation">
+	<form class="navbar-form navbar-left" role="search">
+		<div class="form-group">
+			<input type="text" class="form-control" placeholder="Search">
+		</div>
+	</form>
+</nav>
 <body>
-	<div class="tiles">
+	<div class="tiles container">
 		<div>
-			Toys
+			<h3>Toys & Games</h3>
 		</div>
 		<div>
-			Electronics
+			<h3>Electronics</h3>
 		</div>
 	</div>
 </body>
