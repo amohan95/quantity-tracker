@@ -3,7 +3,7 @@ $(document).ready(function(){
 	//ajax call to createCategoryTile off list of categories
 	$.get("./API/categories", function(data){
 		for(var i = 0;i<data.length;i++){
-			$('.tiles').append(createCategoryTiles(data[i]));
+			$('.tiles').append(createCategoryTile(data[i]));
 		}
 	});
 	bindEvents();
