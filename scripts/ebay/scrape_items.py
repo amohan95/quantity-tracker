@@ -10,8 +10,6 @@ DBNAME = 'Tracker'
 client = pymongo.MongoClient(DBHOST, DBPORT)
 db = client[DBNAME]
 
-def get_product(p_id, api):
-	api.execute('FindProduct')
 
 def get_product_items(p_id, api):
 	api.execute('FindProducts', {
@@ -52,7 +50,11 @@ def get_sub_category(parent_c_id, api):
 	pass
 
 def get_top_selling_products(c_id, api):
-	api.execute('getTopSellingProducts', {'categoryId' : c_id})
+	#api.execute('getTopSellingProducts', {'categoryId' : c_id})
+	api.execute('FindProducts', {
+			'CategoryId' : c_id,
+			'IncludeSelector' : ''
+		})
 	return api.response_dict()
 
 
