@@ -1,4 +1,6 @@
 .tile {
+    position:relative;
+    opacity:50%;
     display:inline-block;
 	border-radius: 5px;
 	border: solid 1px #999999;
@@ -7,11 +9,16 @@
     background: -moz-linear-gradient(top, white, #EEEEEE);
     background: -ms-linear-gradient(top, white, #EEEEEE);
     background: -o-linear-gradient(top, white, #EEEEEE);
-    margin: 5px;
-    width:20%;
+    margin: 30px;
+    width:25%;
     cursor:pointer;
 }
-
+.back {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    text-align:left;
+}
 .tile > h2 {
     text-align: center;
     padding-bottom: 10px;
@@ -26,7 +33,7 @@
 }
 .active{
     float:left;
-    opacity:50%;
+    opacity:75%;
     border: solid 5px #999999;
     cursor:default;
 }
