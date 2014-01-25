@@ -1,6 +1,9 @@
 $(document).ready(function(){
 	//get list of categories
 	//ajax call to createCategoryTile off list of categories
+	$.post("./API/categories", function(data){
+		console.log(data);
+	});
 	bindEvents();
 	//createCategoryTiles();
 });
