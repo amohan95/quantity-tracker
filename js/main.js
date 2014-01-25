@@ -4,7 +4,6 @@ $(document).ready(function(){
 
 function bindEvents(){
 	$('.tiles div').click(function(){
-		alert('help');
 		$(this).css('width:80%;');
 	});
 }
