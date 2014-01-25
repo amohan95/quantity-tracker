@@ -3,7 +3,7 @@ $(document).ready(function(){
 	//ajax call to createCategoryTile off list of categories
 	$.get("./API/categories", function(data){
 		for(var i = 0;i<data.length;i++){
-			createCategoryTile(data[i]);
+			$('.tiles').append(createCategoryTile(data[i]));
 		}
 	});
 	bindEvents();
@@ -18,7 +18,7 @@ function bindEvents(){
 			$(this).addClass('active');
 			$('.tiles div:not(.active)').fadeOut();
 			$(this).animate({
-				width: '80%',
+				width: '100%',
 				height: "+=" + $(window).height(),
 			}, 500, function(){
 				//Call to get sub-classes
@@ -28,7 +28,9 @@ function bindEvents(){
 					$(this).parent().animate({
 						width: '20%',
 						height: '10%',
-					}, 750, function(){});
+					}, 500, function(){
+
+					});
 					$(this).remove();
 					$('.tiles div:not(.active)').fadeIn();
 					e.stopPropagation();
