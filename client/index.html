@@ -10,7 +10,7 @@
 	<title></title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width">
-	<!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>-->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 	<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
 	<script src="bootstrap/js/bootstrap.js"></script>
 	<link rel="stylesheet" href="bootstrap/css/bootstrap.css">
@@ -24,14 +24,20 @@
 		}
 	</style>
 </head>
-
+<nav class="navbar navbar-default" role="navigation">
+	<form class="navbar-form navbar-left" role="search">
+		<div class="form-group">
+			<input type="text" class="form-control" placeholder="Search">
+		</div>
+	</form>
+</nav>
 <body>
 	<div class="tiles">
 		<div>
-			Toys
+			<h3>Toys & Games</h3>
 		</div>
 		<div>
-			Electronics
+			<h3>Electronics</h3>
 		</div>
 	</div>
 </body>
