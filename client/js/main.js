@@ -10,7 +10,11 @@ $(document).ready(function(){
 });
 
 function bindEvents(){
-	$('.tiles div').click(function(){
+	
+}
+
+function createCategoryTile(data){
+	return $('<div>').append($('<h3>').html(data.category)).data('categoryId', data.categoryId).click(function(){
 		if($(this).hasClass('active')){
 			return;
 		}
@@ -18,7 +22,7 @@ function bindEvents(){
 			$(this).addClass('active');
 			$('.tiles div:not(.active)').fadeOut();
 			$(this).animate({
-				width: '100%',
+				width: '98%',
 				height: "+=" + $(window).height(),
 			}, 500, function(){
 				//Call to get sub-classes
@@ -37,8 +41,4 @@ function bindEvents(){
 			}));
 		}
 	});
-}
-
-function createCategoryTile(data){
-	return $('<div>').append($('<h3>').html(data.category)).data('categoryId',data.categoryId);
 }
