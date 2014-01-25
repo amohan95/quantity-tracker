@@ -44,7 +44,9 @@ server.get('/', function (req, res) {
     res.sendfile(path.join(__dirname, '../client/index.html'));
 });
 
+server.get('/API/categories',products.getCategories);
 
+server.get('/API/items'/products.getItems);
 
 
 /* Start the server */
