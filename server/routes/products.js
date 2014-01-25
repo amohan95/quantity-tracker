@@ -2,16 +2,30 @@
 
 
 var db = require('../database.js'); 
+var mongoose = require('mongoose');
 
+exports.getItems = function (req, res) {
 
-exports.getProducts = function (req, res) {
-	var id = req.session.account_id;
-	db.Products.findOne({_id:id}, function (err, account) {
+	db.Items.find({}, function (err, items) {
 		if (err){
 			res.send(err,500); 
 		}else{
-			res.send(account,200);  
+			res.send(items,200);  
 		}
 		// saved!
 	})	  
 };
+
+exports.getCategories = function (req, res) {
+	var categories = [{category:'Fun and Games',revenue:9023,categoryId:mongoose.Types.ObjectId()},{category:'Auto',revenue:9023,categoryId:mongoose.Types.ObjectId()},{category:'Sports',revenue:9023,categoryId:mongoose.Types.ObjectId()}];
+	
+	res.send(categories);
+};
+/*
+exports.getCategories = function (req, res) {
+	var catagories = [{catagory:'Fun and Games',revenue:9023},{catagory:'Auto',revenue:9023},{catagory:'Sports',revenue:9023}];
+	
+	res.send(catagories);
+};
+*/
+
