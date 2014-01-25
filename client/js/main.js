@@ -2,7 +2,9 @@ $(document).ready(function(){
 	//get list of categories
 	//ajax call to createCategoryTile off list of categories
 	$.post("./API/categories", function(data){
-		console.log(data);
+		for(var i = 0;i<data.length;i++){
+			$('.tiles').append(createCategoryTiles(data[i]));
+		}
 	});
 	bindEvents();
 	//createCategoryTiles();
@@ -36,5 +38,5 @@ function bindEvents(){
 }
 
 function createCategoryTile(data){
-	return $('<div>').append($('<h3>').html(data));
+	return $('<div>').append($('<h3>').html(data.category));
 }
