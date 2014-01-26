@@ -10,9 +10,10 @@
 	<title></title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width">
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+	<!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>-->
 	<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
 	<script src="bootstrap/js/bootstrap.js"></script>
+	<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
 	<link rel="stylesheet" href="bootstrap/css/bootstrap.css">
 	<link rel="stylesheet" href="bootstrap/css/bootstrap-theme.css">
 	<link rel="stylesheet" href="css/main.css">
@@ -25,20 +26,14 @@
 	</style>
 </head>
 <nav class="navbar navbar-default" role="navigation">
-	<form class="navbar-form navbar-left" role="search">
+	<div class="navbar-form navbar-left" role="search">
 		<div class="form-group">
-			<input type="text" class="form-control" placeholder="Search">
+			<input type="text" id="categorySearch" class="form-control" placeholder="Search">
 		</div>
-	</form>
+	</div>
 </nav>
 <body>
-	<div class="tiles">
-		<div>
-			<h3>Toys & Games</h3>
-		</div>
-		<div>
-			<h3>Electronics</h3>
-		</div>
+	<div class="tiles" id="categories">
 	</div>
 </body>
 <script src="js/main.js"></script>
