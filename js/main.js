@@ -7,7 +7,7 @@ $(document).ready(function(){
             }
         });
         searchTiles();
-});
+    });
 
 function searchTiles(){
 	$('#categorySearch').on('input', function() {
@@ -18,7 +18,7 @@ function searchTiles(){
 			if(!(head_val.indexOf(search) >= 0)) $(head).parent().fadeOut();
 			else $(head).parent().fadeIn();
 		}
-     )});
+       )});
 	$('#subCategorySearch').on('input', function(){
 		$.each($('.subCategoryName'), function(key, head){
 			var search = $('#subCategorySearch').val().toLowerCase();
@@ -26,12 +26,13 @@ function searchTiles(){
 			if(!(head_val.indexOf(search) >= 0)) $(head).parent().fadeOut();
 			else $(head).parent().fadeIn();
 		}
-     )
+       )
 	});
 }
 
 function createCategoryTile(tile, data){
-    tile.append($('<div>').addClass('tile').append($('<h2>').html(data.name).addClass('categoryName')).attr('data-categoryId', data.id).click(function(){
+    var categoryTile = $('<div>').addClass('tile').append($('<h2>').html(data.name).addClass('categoryName')).attr('data-categoryId', data.id);
+    tile.append(categoryTile.click(function(){
         if($(this).hasClass('active')){
             return;
         }
@@ -44,16 +45,14 @@ function createCategoryTile(tile, data){
                 width: '95%',
                 height: "+=" + $(window).height(),
             }, 500, function(){
-              //create subcategories  
-              /*$.get("./ajax/get_subcategories.php", {"categoryId" : data.id}, function(d){*/
-               /* for(var i = 0;i<d.categories.length;i++){*/
-                    var d = {'categories':[{name:"Hello",id:123123}, {name:"HI",id:2123123}]};
-                    for(var i = 0;i<d.categories.length;i++){
-                        createSubCategoryTile($(this), d.categories[i]);
-                    }
-             /*   }
-            }*/
-            /*)*/});
+              //create subcategories 
+
+              $.get("./ajax/get_subcategories.php", {"categoryId" : data.id}, function(d){
+                for(var i = 0;i<d.categories.length;i++){
+                    createSubCategoryTile(categoryTile, d.categories[i]);
+                }
+            }
+            )});
             $('#categorySearch').attr('id','subCategorySearch').off();
             $('#subCategorySearch').val('');
             searchTiles();
@@ -78,12 +77,10 @@ function createCategoryTile(tile, data){
 }
 function createProgressBar(percentage, id){
 	return $('<div>').addClass('progress progress-striped').append($('<div>').addClass('progress-bar progress-bar-success').attr('role','progressbar')
-     .attr('aria-valuenow',percentage).attr('aria-valuemin','0').attr('aria-valuemax','100').attr('id',id).css('width', percentage + '%'));
+       .attr('aria-valuenow',percentage).attr('aria-valuemin','0').attr('aria-valuemax','100').attr('id',id).css('width', percentage + '%'));
 }
 function createSubCategoryTile(tile, data){
-    console.log(data);
-    console.log(tile);
-    tile.append($('<div>').addClass('tile').append($('<h3>').html(data.name).addClass('subCategoryName')).data('categoryId', data.id).click(function(){
+    tile.append($('<div>').addClass('tile').append($('<h3>').html(data.name).addClass('subCategoryName')).attr('data-categoryId', data.id).click(function(){
         if($(this).hasClass('active')){
             return;
         }
@@ -96,13 +93,16 @@ function createSubCategoryTile(tile, data){
             width: '95%',
             height: '95%',
         }, 500, function(){
-            $.get("./ajax/get_item_info.php", {'categoryId': data.id}, function(data){
-                $(this).append($('<div>').attr('id','placeholder').css('width','85%').css('height','85%'));
-                $.plot($("#placeholder"), [ [[0, 0], [1, 1]] ], { yaxis: { max: 1 } });
-            });
+
+        });
+        $.get("./ajax/get_item_info.php", {'categoryId': data.id}, function(data){
+            console.log($('.active h3').parent());
+            $('.active > .subCategoryName').append($('<div>').attr('class','graph-wrapper').append($('<div>').attr('id','placeholder').css('width','800px').css('height','400px')));
+            $.plot($('#placeholder'), [ [[0, 0], [1, 1]] ], { yaxis: { max: 1 } });
         });
           $('#subCategorySearch').prop('disabled', true);
           $(this).append($('<i>').addClass('back fa fa-arrow-circle-o-left fa-3x').click(function(e){
+            $('.graph-wrapper').remove();
             $(this).parent().removeClass('active');
             $(this).parent().animate({
                 width: width,
@@ -111,7 +111,7 @@ function createSubCategoryTile(tile, data){
 
             });
             $(this).parent().siblings('.tile:not(.active)').fadeIn('slow');
-            $(this).parent().children(':not(.subCategoryName):not(.progress)').remove();
+            $(this).parent().children(':not(.subCategoryName)').remove();
             $('#subCategorySearch').prop('disabled', false);
             e.stopPropagation();
         }));
