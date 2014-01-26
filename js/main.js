@@ -45,12 +45,15 @@ function createCategoryTile(tile, data){
                 height: "+=" + $(window).height(),
             }, 500, function(){
               //create subcategories  
-              $.get("./ajax/get_subcategories.php", {"categoryId" : data.id}, function(d){
-                for(var i = 0;i<d.categories.length;i++){
-                    createSubCategoryTile($(this), d.categories[i]);
-                }
-            }
-            )});
+              /*$.get("./ajax/get_subcategories.php", {"categoryId" : data.id}, function(d){*/
+               /* for(var i = 0;i<d.categories.length;i++){*/
+                    var d = {'categories':[{name:"Hello",id:123123}, {name:"HI",id:2123123}]};
+                    for(var i = 0;i<d.categories.length;i++){
+                        createSubCategoryTile($(this), d.categories[i]);
+                    }
+             /*   }
+            }*/
+            /*)*/});
             $('#categorySearch').attr('id','subCategorySearch').off();
             $('#subCategorySearch').val('');
             searchTiles();
