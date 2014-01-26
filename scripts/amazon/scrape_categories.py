@@ -62,14 +62,15 @@ for id, name in BASE_NODES.items():
 		SUB_NODES[int(browse_sub_node.BrowseNodeId)] = (str(browse_sub_node.Name), id)
 		print ('	Found Sub BrowseNode {0} with id {1}'.format(browse_sub_node.Name, browse_sub_node.BrowseNodeId))
 
-pprint.pprint(SUB_NODES)
 def sub_node_generator():
 	for k, v in SUB_NODES.items():
 		yield (k, v[0], v[1])
+
 conn = sqlite3.connect('tracker.db')
 print('Connected to tracker.db')
 c = conn.cursor()
 c.execute('CREATE TABLE IF NOT EXISTS categories (id, name)')
 c.executemany('INSERT INTO categories VALUES (?,?)', BASE_NODES.items())
 c.execute('CREATE TABLE IF NOT EXISTS subcategories (id, name, parent)')
-c.executemany('INSERT INTO subcategories VALUES (?,?,?)', sub_node_generator())
+for sub_node in sub_node_generator():
+	print('INSERT INTO subcategories VALUES ({0},"{1}",{2});'.format(sub_node[0], sub_node[1], str(sub_node[2])))
