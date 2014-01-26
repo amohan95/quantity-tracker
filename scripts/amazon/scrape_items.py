@@ -168,10 +168,9 @@ def splice_sequence(seq, n):
 
 def save_mysql(listing):
 	conn = sqlite3.connect('tracker.db')
-	print('Connected to tracker.db')
 	c = conn.cursor()
 	c.execute('''CREATE TABLE IF NOT EXISTS listings
-             (current_stock, price, shipping, date_time, offer_listing_id, item) ''')
+             (current_stock, change_stock, price, shipping, date_time, offer_listing_id, item) ''')
 	c.execute('''CREATE TABLE IF NOT EXISTS items
              (asin, category, name, rank, price) ''')
 	c.execute('SELECT rowid FROM items WHERE asin=?', (listing.item['asin'],))
@@ -182,8 +181,13 @@ def save_mysql(listing):
 		item_id = c.lastrowid
 	else:
 		item_id = item_id[0]
+	c.execute('SELECT current_stock FROM listings WHERE (SELECT MAX(date_time) FROM listings WHERE offer_listing_id = ?)', (listing.offer_listing_id,))
+	current_stock = c.fetchone()
+	change_stock = 0
+	if current_stock:
+		change_stock = current_stock[0] - listing.current_stock
 	c.execute('''INSERT INTO listings
-           	  	 VALUES (?, ?, ?, ?, ?, ?)''', (listing.current_stock, listing.price, listing.shipping, listing.date_time, listing.offer_listing_id, item_id))
+           	  	 VALUES (?, ?, ?, ?, ?, ?, ?)''', (listing.current_stock, change_stock, listing.price, listing.shipping, listing.date_time, listing.offer_listing_id, item_id))
 	conn.commit()
 	conn.close()
 
