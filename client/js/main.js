@@ -1,7 +1,7 @@
 $(document).ready(function(){
         //get list of categories
         //ajax call to createCategoryTile off list of categories
-        $.get("./API/categories", function(d){*/
+        $.get("./API/categories", function(d){
                 for(var i = 0;i<d.length;i++){
                     createCategoryTile($('#categories'), d[i]);
                 }
@@ -45,7 +45,7 @@ function createCategoryTile(tile, data){
                                 height: "+=" + $(window).height(),
                         }, 500, function(){
                                 //subcategories
-                                $.get("./API/categories", function(d){*/
+                                $.get("./API/categories", function(d){
                                         for(var i = 0;i<d.length;i++){
                                                 createSubCategoryTile($(this), d[i]);
                                         }
