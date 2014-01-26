@@ -62,7 +62,7 @@ function createCategoryTile(tile, data){
                 searchTiles();
                 $(this).parent().animate({
                     width: width + 5,
-                    height: height + 7,
+                    height: height + 9,
                 }, 500, function(){
 
                 });
