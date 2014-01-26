@@ -31,7 +31,7 @@ function searchTiles(){
 }
 
 function createCategoryTile(tile, data){
-    tile.append($('<div>').addClass('tile').append($('<h2>').html(data.name).addClass('categoryName')).data('categoryId', data.id).click(function(){
+    tile.append($('<div>').addClass('tile').append($('<h2>').html(data.name).addClass('categoryName')).attr('data-categoryId', data.id).click(function(){
         if($(this).hasClass('active')){
             return;
         }
@@ -46,8 +46,8 @@ function createCategoryTile(tile, data){
             }, 500, function(){
               //create subcategories  
               $.get("./ajax/get_subcategories.php", {"categoryId" : data.id}, function(d){
-                for(var i = 0;i<d.length;i++){
-                    createSubCategoryTile($(this), d[i]);
+                for(var i = 0;i<d.categories.length;i++){
+                    createSubCategoryTile($(this), d.categories[i]);
                 }
             }
             )});
@@ -78,7 +78,9 @@ function createProgressBar(percentage, id){
      .attr('aria-valuenow',percentage).attr('aria-valuemin','0').attr('aria-valuemax','100').attr('id',id).css('width', percentage + '%'));
 }
 function createSubCategoryTile(tile, data){
-    tile.append($('<div>').addClass('tile').append($('<h3>').html(data.category).addClass('subCategoryName')).data('categoryId', data.categoryId).click(function(){
+    console.log(data);
+    console.log(tile);
+    tile.append($('<div>').addClass('tile').append($('<h3>').html(data.name).addClass('subCategoryName')).data('categoryId', data.id).click(function(){
         if($(this).hasClass('active')){
             return;
         }
@@ -91,7 +93,7 @@ function createSubCategoryTile(tile, data){
             width: '95%',
             height: '95%',
         }, 500, function(){
-            $.get("./ajax/get_item_info.php", {'categoryId': data.categoryId}, function(data){
+            $.get("./ajax/get_item_info.php", {'categoryId': data.id}, function(data){
                 $(this).append($('<div>').attr('id','placeholder').css('width','85%').css('height','85%'));
                 $.plot($("#placeholder"), [ [[0, 0], [1, 1]] ], { yaxis: { max: 1 } });
             });

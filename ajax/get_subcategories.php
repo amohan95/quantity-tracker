@@ -10,7 +10,7 @@ if(isset($_GET['categoryId'])){
 	while($row = $result->fetchArray()){
 		array_push($resarr, $row);
 	}
-	echo(json_encode(array("success"=>true, "category" => $resarr)));
+	echo(json_encode(array("success"=>true, "categories" => $resarr)));
 }
 else{
 	http_response_code(400);
