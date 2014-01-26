@@ -2,11 +2,11 @@ $(document).ready(function(){
         //get list of categories
         //ajax call to createCategoryTile off list of categories
         $.get("./ajax/get_categories.php", function(d){
-            for(var i = 0;i<d.length;i++){
-                createCategoryTile($('#categories'), d[i]);
+            for(var i = 0;i<d.categories.length;i++){
+                createCategoryTile($('#categories'), d.categories[i]);
             }
         });
-searchTiles();
+        searchTiles();
 });
 
 function searchTiles(){
@@ -31,7 +31,7 @@ function searchTiles(){
 }
 
 function createCategoryTile(tile, data){
-    tile.append($('<div>').addClass('tile').append($('<h2>').html(data.category).addClass('categoryName')).data('categoryId', data.categoryId).click(function(){
+    tile.append($('<div>').addClass('tile').append($('<h2>').html(data.name).addClass('categoryName')).data('categoryId', data.id).click(function(){
         if($(this).hasClass('active')){
             return;
         }
@@ -45,7 +45,7 @@ function createCategoryTile(tile, data){
                 height: "+=" + $(window).height(),
             }, 500, function(){
               //create subcategories  
-              $.get("./ajax/get_subcategories.php", {"categoryId" : data.categoryId}, function(d){
+              $.get("./ajax/get_subcategories.php", {"categoryId" : data.id}, function(d){
                 for(var i = 0;i<d.length;i++){
                     createSubCategoryTile($(this), d[i]);
                 }

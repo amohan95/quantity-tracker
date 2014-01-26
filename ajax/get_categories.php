@@ -1,12 +1,10 @@
 <?php
-	class MyDB extends SQLite3
-	{
-    	function __construct()
-    	{
-        	$this->open('../scripts/amazon/tracker.db');
-    	}
-	}
-	$db = new myDB();
+	header('Content-type: application/json');
+	$db = new SQLite3('../scripts/amazon/tracker.db');
 	$result = $db->query('SELECT name, id FROM categories');
-	echo(json_encode($result));		
+	$resarr = array();
+	while($row=$result->fetchArray()){
+		array_push($resarr, $row);	
+	}
+	echo(json_encode(array("success"=>true, "categories" => $resarr)));
 ?>

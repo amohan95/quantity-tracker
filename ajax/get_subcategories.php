@@ -1,18 +1,16 @@
 <?php
 
 if(isset($_GET['categoryId'])){
-	class MyDB extends SQLite3
-	{
-		function __construct()
-		{
-			$this->open('../scripts/amazon/tracker.db');
-		}
-	}
-	$db = new myDB();
-	$statement = $db->prepare('SELECT name, id FROM subcategories WHERE category=:id');
+	header('Content-type: application/json');
+	$db = new SQLite3('../scripts/amazon/tracker.db');
+	$statement = $db->prepare('SELECT name, id FROM subcategories WHERE parent=:id');
 	$statement->bindValue(':id', $_GET['categoryId'], SQLITE3_INTEGER);
 	$result = $statement->execute();
-	echo(json_encode($result->fetchArray()));
+	$resarr = array();
+	while($row = $result->fetchArray()){
+		array_push($resarr, $row);
+	}
+	echo(json_encode(array("success"=>true, "category" => $resarr)));
 }
 else{
 	http_response_code(400);
