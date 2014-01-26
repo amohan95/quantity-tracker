@@ -1,14 +1,14 @@
 import pprint
 import pymongo
 
-from ebaysdk import merchandising, trading, shopping
+from ebaysdk import merchandising, trading, shopping, finding
 
 DBHOST = 'localhost'
 DBPORT = 27017
 DBNAME = 'Tracker'
 
-client = pymongo.MongoClient(DBHOST, DBPORT)
-db = client[DBNAME]
+#client = pymongo.MongoClient(DBHOST, DBPORT)
+#db = client[DBNAME]
 
 
 def get_product_items(p_id, api):
@@ -50,14 +50,11 @@ def get_sub_category(parent_c_id, api):
 	pass
 
 def get_top_selling_products(c_id, api):
-	#api.execute('getTopSellingProducts', {'categoryId' : c_id})
-	api.execute('FindProducts', {
-			'CategoryId' : c_id,
-			'IncludeSelector' : ''
+	#api.execute('getTopSellingProducts', {})
+	api.execute('findItemsByCategory', {
+			'categoryId' : c_id
 		})
 	return api.response_dict()
-
-
 
 trade = trading(domain='api.sandbox.ebay.com',
 			    appid="MatthewB-33a9-4d50-b56e-4398cece88d6",
@@ -68,16 +65,25 @@ trade = trading(domain='api.sandbox.ebay.com',
 merch = merchandising(domain='svcs.sandbox.ebay.com',
 					  appid='MatthewB-33a9-4d50-b56e-4398cece88d6')
 
+find = finding(domain='svcs.sandbox.ebay.com',
+			   appid='MatthewB-33a9-4d50-b56e-4398cece88d6')
+
 shop = shopping(domain='open.api.sandbox.ebay.com',
 				appid='MatthewB-33a9-4d50-b56e-4398cece88d6')
 
-for product in get_top_selling_products(267, merch).productRecommendations.product:
+#pprint.pprint(get_categories(trade))
+top_selling_products = get_top_selling_products(246, find)
+pprint.pprint(top_selling_products)
+for product in top_selling_products.productRecommendations.product:
+	print('Aggregating data for {0} ({1})'.format(product.title, product.productId.value))
 	item_ids = []
 	product_items = get_product_items(product.productId.value, shop)
 	if product_items and product_items.ItemArray:	
 		for item in product_items.ItemArray.Item:
+			pprint.pprint(item)
 			if not isinstance(item, basestring):
-				db.items.save(get_single_item(item.ItemID, shop).Item)
+				pprint.pprint(get_single_item(item.ItemID, shop).Item)
+				#db.items.save(get_single_item(item.ItemID, shop).Item)
 		#	pprint.pprint(item)
 		#	item_ids.append(item.ItemID)
 		#for item in get_multiple_items(item_ids, shop):
