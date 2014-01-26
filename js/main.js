@@ -31,7 +31,8 @@ function searchTiles(){
 }
 
 function createCategoryTile(tile, data){
-    tile.append($('<div>').addClass('tile').append($('<h2>').html(data.name).addClass('categoryName')).attr('data-categoryId', data.id).click(function(){
+    var categoryTile = $('<div>').addClass('tile').append($('<h2>').html(data.name).addClass('categoryName')).attr('data-categoryId', data.id);
+    tile.append(categoryTile.click(function(){
         if($(this).hasClass('active')){
             return;
         }
@@ -47,7 +48,7 @@ function createCategoryTile(tile, data){
               //create subcategories  
               $.get("./ajax/get_subcategories.php", {"categoryId" : data.id}, function(d){
                 for(var i = 0;i<d.categories.length;i++){
-                    createSubCategoryTile($(this), d.categories[i]);
+                    createSubCategoryTile(categoryTile, d.categories[i]);
                 }
             }
             )});
