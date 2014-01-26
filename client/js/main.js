@@ -1,13 +1,34 @@
 $(document).ready(function(){
         //get list of categories
         //ajax call to createCategoryTile off list of categories
-        var d = [{category:"Cats", categoryId: 1}, {category:"Dogs", categoryId: 2}, {category: "Pigs", categoryId: 3}, {category: "Canaries", categoryId: 4}];
-        $.get("./API/categories", function(d){
+        $.get("./API/categories", function(d){*/
                 for(var i = 0;i<d.length;i++){
                     createCategoryTile($('#categories'), d[i]);
                 }
         });
+	searchTiles();
 });
+
+function searchTiles(){
+	$('#categorySearch').on('input', function() {
+		if(!$('#categorySearch')) return;
+		$.each($('.categoryName'), function(key, head){
+			var search = $('#categorySearch').val().toLowerCase();
+			var head_val = $(head).text().toLowerCase();
+			if(!(head_val.indexOf(search) >= 0)) $(head).parent().fadeOut();
+			else $(head).parent().fadeIn();
+		}
+	)});
+	$('#subCategorySearch').on('input', function(){
+		$.each($('.subCategoryName'), function(key, head){
+			var search = $('#subCategorySearch').val().toLowerCase();
+			var head_val = $(head).text().toLowerCase();
+			if(!(head_val.indexOf(search) >= 0)) $(head).parent().fadeOut();
+			else $(head).parent().fadeIn();
+		}
+	)
+	});
+}
 
 function createCategoryTile(tile, data){
         tile.append($('<div>').addClass('tile').append($('<h2>').html(data.category).addClass('categoryName')).data('categoryId', data.categoryId).click(function(){
@@ -24,17 +45,25 @@ function createCategoryTile(tile, data){
                                 height: "+=" + $(window).height(),
                         }, 500, function(){
                                 //subcategories
-                                $.get("./API/categories", function(d){
+                                $.get("./API/categories", function(d){*/
                                         for(var i = 0;i<d.length;i++){
                                                 createSubCategoryTile($(this), d[i]);
                                         }
                                 }
                         )});
+                        $('#categorySearch').attr('id','subCategorySearch').off();
+                        $('#subCategorySearch').val('');
+                        searchTiles();
+
                         $(this).append($('<i>').addClass('back fa fa-arrow-circle-o-left fa-3x').click(function(e){
                                 $(this).parent().removeClass('active');
+                                $('#subCategorySearch').attr('id','categorySearch').off();
+                        		$('#categorySearch').val('');
+                        		$('#categorySearch').prop('disabled', false);
+                        		searchTiles();
                                 $(this).parent().animate({
                                         width: width + 5,
-                                        height: height+5,
+                                        height: height + 5,
                                 }, 500, function(){
 
                                 });
@@ -70,6 +99,7 @@ function createSubCategoryTile(tile, data){
                                         }
                                 }*/
                         /*)*/});
+                        $('#subCategorySearch').prop('disabled', true);
                         $(this).append($('<i>').addClass('back fa fa-arrow-circle-o-left fa-3x').click(function(e){
                                 $(this).parent().removeClass('active');
                                 $(this).parent().animate({
@@ -80,6 +110,7 @@ function createSubCategoryTile(tile, data){
                                 });
                                 $(this).parent().siblings('.tile:not(.active)').fadeIn('slow');
                                 $(this).parent().children(':not(.subCategoryName):not(.progress)').remove();
+                                $('#subCategorySearch').prop('disabled', false);
                                 e.stopPropagation();
                         }));
                 }
@@ -87,7 +118,7 @@ function createSubCategoryTile(tile, data){
 }
 
 function createItemTile(tile, data){
-        tile.append($('<div>').addClass('tile').append($('<h4>').html(data.category).addClass('subCategoryName')).data('categoryId', data.categoryId).click(function(){
+        tile.append($('<div>').addClass('tile').append($('<h4>').html(data.category).addClass('itemName')).data('categoryId', data.categoryId).click(function(){
                 if($(this).hasClass('active')){
                         return;
                 }
