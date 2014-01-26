@@ -27,7 +27,8 @@
 		}
 	</style>
 </head>
-<nav class="navbar navbar-default" role="navigation">
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+<div class="navbar-brand">Amazon Quantity Tracker</div>
 	<div class="navbar-form navbar-left" role="search">
 		<div class="form-group">
 			<input type="text" id="categorySearch" class="form-control" placeholder="Search">
