@@ -12,6 +12,9 @@
     width:25%;
     cursor:pointer;
 }
+.tile:not(.active){
+    line-height:2;
+}
 .back {
     position: absolute;
     top: 5px;
@@ -31,9 +34,24 @@
     text-align: center;
     padding-bottom: 3px;
 }
+.graph-wrapper{
+    padding: 10px;
+    margin: 10px;
+    text-align: center;
+    width: 100%;
+}
+#placeholder{
+    margin: 0 auto;
+    z-index: 1001;
+}
 .active{
     float:left;
     background-color: rgba(255,255,255,.1);
     border: solid 5px #999999;
     cursor:default;
+    height:auto;
+    overflow: scroll;
+}
+.active:after{
+    content: "."; display: block; height: 0; clear: both; visibility: hidden;
 }
