@@ -95,13 +95,26 @@ function createSubCategoryTile(tile, data){
         }, 500, function(){
 
         });
-        $.get("./ajax/get_item_info.php", {'categoryId': data.id}, function(data){
-            console.log($('.active h3').parent());
+          var plotPoints = [];
+          var yMax = 0;
             $('.active > .subCategoryName').append($('<div>').attr('class','graph-wrapper').append($('<div>').attr('id','placeholder').css('width','800px').css('height','400px')));
-            $.plot($('#placeholder'), [ [[0, 0], [1, 1]] ], { yaxis: { max: 1 } });
+            var plot = $.plot($('#placeholder'), [[12, 42], [14,54]], { yaxis: { max: yMax, min: 0 } });
+          var jqxhr = $.get("./ajax/get_item_info.php", {'categoryId': data.id}, function(d){
+            for(var i = 0;i<d.items.length;i++){
+                if(d.items[i][1] > yMax) yMax = d.items[i][1]*1.1;
+                plotPoints.push(d.items[i]);
+            }
+        }).done(function(){
+            console.log(plotPoints);
+            // plot.setData(plotPoints);
+            // plot.draw();
+        }).fail(function(){
+
+        }).always(function(){
+
         });
-          $('#subCategorySearch').prop('disabled', true);
-          $(this).append($('<i>').addClass('back fa fa-arrow-circle-o-left fa-3x').click(function(e){
+        $('#subCategorySearch').prop('disabled', true);
+        $(this).append($('<i>').addClass('back fa fa-arrow-circle-o-left fa-3x').click(function(e){
             $('.graph-wrapper').remove();
             $(this).parent().removeClass('active');
             $(this).parent().animate({
@@ -115,6 +128,6 @@ function createSubCategoryTile(tile, data){
             $('#subCategorySearch').prop('disabled', false);
             e.stopPropagation();
         }));
-      }
-  }));
+    }
+}));
 }
