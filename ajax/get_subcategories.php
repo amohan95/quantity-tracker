@@ -8,7 +8,7 @@ if(isset($_GET['categoryId'])){
 	$result = $statement->execute();
 	$resarr = array();
 	while($row = $result->fetchArray()){
-		array_push($resarr, $row);
+		array_push($resarr, array('name' => $row['name'], 'id' => $row['id']));
 	}
 	echo(json_encode(array("success"=>true, "categories" => $resarr)));
 }

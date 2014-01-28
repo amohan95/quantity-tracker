@@ -7,12 +7,6 @@ if(isset($_GET['categoryId'])){
 	$result = $statement->execute();
 	$resarr = array();
 	while($row = $result->fetchArray()){
-		array_push($resarr, $row);
+		array_push($resarr, array('revenue' => $row['listings.change_stock*listings.price'], 'datetime' => $row['date_time']));
 	}
-	$test = [[10, 34],[12, 56]];
-	echo json_encode(array("success"=>true, "items"=>$test));
-}
-else{
-	http_response_code(400);
-}
 ?>

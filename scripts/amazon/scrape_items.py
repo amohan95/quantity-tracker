@@ -11,7 +11,7 @@ from amazonproduct.errors import *
 from urllib2 import urlopen, HTTPError
 from bs4 import BeautifulSoup
 
-
+FAKE_LISTINGS = True
 HTML_PRICE_CLASS = 'olpOfferPrice'
 
 def get_api():
@@ -60,27 +60,29 @@ def aggregate_browse_node(id, sub_node=False):
 		return {'parent' : browse_node, 'sub_nodes' : browse_nodes}
 
 def aggregate_item( asin, rank):
-	result = api.item_lookup(asin, IdType='ASIN', ResponseGroup='Large,Offers,BrowseNodes')
-	item_attributes = result.Items.Item.ItemAttributes
-	item = Item()
-	item.name = str(item_attributes.Title)
-	item.asin = str(asin)
-	item.rank = rank
-	item.category = int(result.Items.Item.BrowseNodes.BrowseNode.BrowseNodeId)
+	item = None
+	listings = []
 	try:
-		item.price = int(result.Items.Item.Offers.Offer.OfferListing.Price.Amount)
+		result = api.item_lookup(asin, IdType='ASIN', ResponseGroup='Large,Offers,BrowseNodes')
+		item_attributes = result.Items.Item.ItemAttributes
+		item = Item()
+		item.name = unicode(item_attributes.Title)
+		item.asin = str(asin)
+		item.rank = rank
+		item.category = int(result.Items.Item.BrowseNodes.BrowseNode.BrowseNodeId)
+		try:
+			item.price = int(result.Items.Item.Offers.Offer.OfferListing.Price.Amount)
+		except AttributeError, e:
+			print('Item "{0}" ({1}) has no Offer'.format(item.name, item.asin))
 		try:
 			listings = aggregate_item_listings( result.Items.Item.Offers.MoreOffersUrl)	
 			print('Found item {0}'.format(item))
-			return {'item' : item, 'listings' : listings}
 		except AttributeError, e:
-			print('Item "{0}" ({1}) has no 3rd party sellers'.format(item.name, item.asin))
-			raise
-	except AttributeError, e:
-		print('Item "{0}" ({1}) has no offer'.format(item.name, item.asin))
-		raise
-	print('Found item {0}'.format(item))
-	return {'item' : item, 'listings' : {}}
+			print('Item "{0}" ({1}) has no MoreOffersUrl'.format(item.name, item.asin))
+		print('Found item {0}'.format(item))
+	except AWSError, e:
+		print(e)
+	return {'item' : item, 'listings' : listings}
 
 def aggregate_item_listings(base_url):
 	url = str(base_url)
@@ -93,6 +95,11 @@ def aggregate_item_listings(base_url):
 		except HTTPError, e:
 			if e.code == 503:
 				pprint.pprint(e.msg)
+			else:
+				raise
+		except ValueError, e:
+			if 'unknown url type' in e.msg:
+				return []
 			else:
 				raise
 	return parse_listings(BeautifulSoup(html))
@@ -110,13 +117,15 @@ def scrape_current_stock(listing):
 			print(e)	
 		
 
-def scrape_listings(items):
+def scrape_listings(items, i=0):
 	listings = []
 	for l in items['listings']:
 		#scrape_current_stock(items[j]['listings'][i])
 		a = 10000/(l.price)
-		l.date_time = datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 		t = datetime.datetime.today()
+		if FAKE_LISTINGS:
+			t = t - datetime.timedelta(hours=24-i)
+		l.date_time = t.strftime('%Y-%m-%d %H:%M:%S')
 		u = t.hour * 3600 + t.minute * 60 + t.second
 		l.current_stock = int(round(a*math.sin(86400/6.28*u)+1.5*a)) + random.randint(-10, 10)
 		if l.current_stock < 0:
@@ -126,20 +135,22 @@ def scrape_listings(items):
 	return listings
 
 def parse_listings(soup, listings=[]):
-	for offer in soup.find(id='olpTabContent').select('.olpOffer'):
-		il = ItemListing()
-		il.offer_listing_id = offer.find(lambda tag: tag.name == 'input' and tag.has_attr('name') and tag['name'] == 'offeringID.1')['value']
-		il.price = formatted_dollars_to_cents(str(offer.find('span', {'class' : HTML_PRICE_CLASS}).string).strip())
-		shipping = offer.find('span', {'class' : 'olpShippingPrice'})
-		if shipping:
-			il.shipping = formatted_dollars_to_cents(str(shipping.string.strip()))		
-		else:
-			il.shipping = 0		
-		listings.append(il)
+	tabContent = soup.find(id='olpTabContent')
+	if tabContent:
+		for offer in tabContent.select('.olpOffer'):
+			il = ItemListing()
+			il.offer_listing_id = offer.find(lambda tag: tag.name == 'input' and tag.has_attr('name') and tag['name'] == 'offeringID.1')['value']
+			il.price = formatted_dollars_to_cents(str(offer.find('span', {'class' : HTML_PRICE_CLASS}).string).strip())
+			shipping = offer.find('span', {'class' : 'olpShippingPrice'})
+			if shipping:
+				il.shipping = formatted_dollars_to_cents(str(shipping.string.strip()))		
+			else:
+				il.shipping = 0		
+			listings.append(il)
 	return listings
 
 def formatted_dollars_to_cents(s):
-	d, c = s.strip('$').split('.', 2)
+	d, c = s.strip('$').replace(',', '').split('.', 2)
 	return int(d) * 100 + int(c)
 
 def cart_create( items, **params):
@@ -188,13 +199,46 @@ def save_mysql(listing):
 		change_stock = current_stock[0] - listing.current_stock
 	c.execute('''INSERT INTO listings
            	  	 VALUES (?, ?, ?, ?, ?, ?, ?)''', (listing.current_stock, change_stock, listing.price, listing.shipping, listing.date_time, listing.offer_listing_id, item_id))
+	print('Inserted ' + str(listing))
 	conn.commit()
 	conn.close()
 
-browse_node = aggregate_browse_node(165793011, True)
-for i in browse_node['items']:
+if FAKE_LISTINGS:
+	conn = sqlite3.connect('tracker.db')
+	conn.row_factory = sqlite3.Row
+	c = conn.cursor()
+	c.execute('SELECT *, rowid FROM items')
+	for row in c.fetchall():
+		item = Item()
+		item.name = row['name']
+		item.asin = row['asin']
+		item.rank = row['rank']
+		item.category = row['category']
+		item.price = row['price']	
+		c.execute('SELECT listings.* FROM listings JOIN items ON listings.item = ?', (row['rowid'],))
+		listings = []
+		for row2 in c.fetchall():
+			listing = ItemListing()
+			listing.offer_listing_id = row2['offer_listing_id']
+			listing.price = row2['price']
+			listing.shipping = row2['shipping']
+			listings.append(listing)	
+		for i in range(0, 24):
+				for l in scrape_listings({'item' : item, 'listings' : listings}, i):
+					save_mysql(l)
+else:
+	browse_node = aggregate_browse_node(541966, True)
+	for i in browse_node['items']:
 		for l in scrape_listings(i):
 			save_mysql(l)
+# conn = sqlite3.connect('tracker.db')
+# c = conn.cursor()
+# c.execute('SELECT id FROM categories')
+# for row in c.fetchall():
+# 	browse_node = aggregate_browse_node(row[0], True)
+# 	for i in browse_node['items']:
+# 			for l in scrape_listings(i):
+# 				save_mysql(l)
 
 
 
