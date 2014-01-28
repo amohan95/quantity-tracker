@@ -18,7 +18,7 @@ function searchTiles(){
 			if(!(head_val.indexOf(search) >= 0)) $(head).parent().fadeOut();
 			else $(head).parent().fadeIn();
 		}
-       )});
+     )});
 	$('#subCategorySearch').on('input', function(){
 		$.each($('.subCategoryName'), function(key, head){
 			var search = $('#subCategorySearch').val().toLowerCase();
@@ -26,7 +26,7 @@ function searchTiles(){
 			if(!(head_val.indexOf(search) >= 0)) $(head).parent().fadeOut();
 			else $(head).parent().fadeIn();
 		}
-       )
+     )
 	});
 }
 
@@ -46,7 +46,6 @@ function createCategoryTile(tile, data){
                 height: "+=" + $(window).height(),
             }, 500, function(){
               //create subcategories 
-
               $.get("./ajax/get_subcategories.php", {"categoryId" : data.id}, function(d){
                 for(var i = 0;i<d.categories.length;i++){
                     createSubCategoryTile(categoryTile, d.categories[i]);
@@ -77,7 +76,7 @@ function createCategoryTile(tile, data){
 }
 function createProgressBar(percentage, id){
 	return $('<div>').addClass('progress progress-striped').append($('<div>').addClass('progress-bar progress-bar-success').attr('role','progressbar')
-       .attr('aria-valuenow',percentage).attr('aria-valuemin','0').attr('aria-valuemax','100').attr('id',id).css('width', percentage + '%'));
+     .attr('aria-valuenow',percentage).attr('aria-valuemin','0').attr('aria-valuemax','100').attr('id',id).css('width', percentage + '%'));
 }
 function createSubCategoryTile(tile, data){
     tile.append($('<div>').addClass('tile').append($('<h3>').html(data.name).addClass('subCategoryName')).attr('data-categoryId', data.id).click(function(){
@@ -96,18 +95,21 @@ function createSubCategoryTile(tile, data){
 
         });
           var plotPoints = [];
-          var yMax = 0;
-            $('.active > .subCategoryName').append($('<div>').attr('class','graph-wrapper').append($('<div>').attr('id','placeholder').css('width','800px').css('height','400px')));
-            var plot = $.plot($('#placeholder'), [[12, 42], [14,54]], { yaxis: { max: yMax, min: 0 } });
           var jqxhr = $.get("./ajax/get_item_info.php", {'categoryId': data.id}, function(d){
+            $('.active > .subCategoryName').append($('<div>').addClass('loading').append($('<img>').attr('src','./img/ajax-loader.gif')));
             for(var i = 0;i<d.items.length;i++){
-                if(d.items[i][1] > yMax) yMax = d.items[i][1]*1.1;
-                plotPoints.push(d.items[i]);
+                var rev = d.items[i]['revenue']/100;
+                var point = [];
+                point.push(i, rev);
+                plotPoints.push(point);
             }
         }).done(function(){
-            console.log(plotPoints);
-            // plot.setData(plotPoints);
-            // plot.draw();
+            $('.loading').remove();
+            $('.active > .subCategoryName').append($('<div>').attr('class','graph-wrapper').append($('<div>').attr('id','placeholder').css('width','800px').css('height','400px')));
+            var plot = $.plot($('#placeholder'), [{
+                label: "Revenue for " + data.name,
+                data: plotPoints
+            }, { yaxis: { min: 0 } }]);
         }).fail(function(){
 
         }).always(function(){

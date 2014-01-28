@@ -9,4 +9,9 @@ if(isset($_GET['categoryId'])){
 	while($row = $result->fetchArray()){
 		array_push($resarr, array('revenue' => $row['listings.change_stock*listings.price'], 'datetime' => $row['date_time']));
 	}
+	echo json_encode(array("success"=>true, "items"=>$resarr));
+}
+else{
+	http_response_code(400);
+}
 ?>
