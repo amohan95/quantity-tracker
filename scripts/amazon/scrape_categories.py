@@ -30,12 +30,12 @@ BASE_NODES = {
 	165793011: 'Toys',
 	165796011: 'Baby',
 	377110011: 'Watches',
-	2350149011L: 'MobileApps',
-	2617941011L: 'ArtsAndCrafts',
-	2619525011L: 'Appliances',
-	2625373011L: 'DVD',
-	2972638011L: 'LawnGarden',
-	4991425011L: 'Collectibles'
+	2350149011: 'MobileApps',
+	2617941011: 'ArtsAndCrafts',
+	2619525011: 'Appliances',
+	2625373011: 'DVD',
+	2972638011: 'LawnGarden',
+	4991425011: 'Collectibles'
 }
  #'DigitalMusic':	195208011,
  #'GourmetFood':	3580501,
@@ -54,23 +54,38 @@ api = API(access_key_id='AKIAJFHSIA6LLFV26CHA',
 	      associate_tag='6185-7386-2972',
 	      locale='us')
 
+def explore_browse_sub_node(node, parent_id, root_id, sub_root_id):
+	SUB_NODES[int(node.BrowseNodeId)] = (str(node.Name), parent_id, root_id, sub_root_id)
+	if sub_root_id == 0:
+		sub_root_id = int(node.BrowseNodeId)
+	print ('Found Sub BrowseNode {0} with id {1} and parent {2}'.format(node.Name, node.BrowseNodeId, parent_id))
+	try:
+		for sub_node in node.BrowseNodes.BrowseNode.Children.BrowseNode:
+			browse_node = api.browse_node_lookup(sub_node.BrowseNodeId)
+			explore_browse_sub_node(sub_node, node.BrowseNodeId, root_id, sub_root_id)
+	except AttributeError, e:
+		print('Reached leaf node')
+
 for id, name in BASE_NODES.items():
 	browse_node_lookup = api.browse_node_lookup(id)
 	BASE_NODES[int(browse_node_lookup.BrowseNodes.BrowseNode.BrowseNodeId)] = str(browse_node_lookup.BrowseNodes.BrowseNode.Name)
 	print ('Found Base BrowseNode {0} with id {1}'.format(browse_node_lookup.BrowseNodes.BrowseNode.Name, browse_node_lookup.BrowseNodes.BrowseNode.BrowseNodeId))
 	for browse_sub_node in browse_node_lookup.BrowseNodes.BrowseNode.Children.BrowseNode:
-		SUB_NODES[int(browse_sub_node.BrowseNodeId)] = (str(browse_sub_node.Name), id)
-		print ('	Found Sub BrowseNode {0} with id {1}'.format(browse_sub_node.Name, browse_sub_node.BrowseNodeId))
+		explore_browse_sub_node(browse_sub_node, id, id, 0)
 
 def sub_node_generator():
 	for k, v in SUB_NODES.items():
-		yield (k, v[0], v[1])
+		yield (k, v[0], v[1], v[2], v[3])
 
 conn = sqlite3.connect('tracker.db')
 print('Connected to tracker.db')
 c = conn.cursor()
-c.execute('CREATE TABLE IF NOT EXISTS categories (id, name)')
-c.executemany('INSERT INTO categories VALUES (?,?)', BASE_NODES.items())
-c.execute('CREATE TABLE IF NOT EXISTS subcategories (id, name, parent)')
+c.execute('CREATE TABLE IF NOT EXISTS categories (id, name, parent, root, sub_root)')
+c.executemany('INSERT INTO categories (id, name) VALUES (?,?)', BASE_NODES.items())
+c.executemany('INSERT INTO categories (id, name, parent, root, sub_root) VALUES (?, ?, ?, ?, ?)', sub_node_generator())
+for node in BASE_NODES.items():
+	print('INSERT INTO categories (id, name) VALUES ({0}, "{1}");'.format(int(node[0]), node[1]))
+	c.execute('INSERT INTO categories (id, name) VALUES ({0}, "{1}")'.format(int(node[0]), node[1]))
 for sub_node in sub_node_generator():
-	print('INSERT INTO subcategories VALUES ({0},"{1}",{2});'.format(sub_node[0], sub_node[1], str(sub_node[2])))
+	print('INSERT INTO categories VALUES ({0},"{1}",{2}, {3}, {4});'.format(int(sub_node[0]), sub_node[1], int(sub_node[2]), int(sub_node[3]), int(sub_node[4])))
+	c.execute('INSERT INTO categories VALUES ({0},"{1}",{2}, {3}, {4})'.format(int(sub_node[0]), sub_node[1], int(sub_node[2]), int(sub_node[3]), int(sub_node[4])))
