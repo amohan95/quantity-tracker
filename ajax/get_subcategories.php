@@ -3,7 +3,7 @@
 if(isset($_GET['categoryId'])){
 	header('Content-type: application/json');
 	$db = new SQLite3('../scripts/amazon/tracker.db');
-	$statement = $db->prepare('SELECT name, id FROM subcategories WHERE parent=:id');
+	$statement = $db->prepare('SELECT name, id FROM categories WHERE parent=:id');
 	$statement->bindValue(':id', $_GET['categoryId'], SQLITE3_INTEGER);
 	$result = $statement->execute();
 	$resarr = array();
