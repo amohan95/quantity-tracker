@@ -1,10 +1,13 @@
 $(document).ready(function(){
         //get list of categories
         //ajax call to createCategoryTile off list of categories
+        $('#categories').append($('<div>').addClass('loading').append($('<img>').attr('src','./img/ajax_loader_blue.gif')));
         $.get("./ajax/get_categories.php", function(d){
             for(var i = 0;i<d.categories.length;i++){
                 createCategoryTile($('#categories'), d.categories[i]);
             }
+        }).done(function(){
+            $('.loading').remove();
         });
         searchTiles();
     });
@@ -45,13 +48,15 @@ function createCategoryTile(tile, data){
                 width: '95%',
                 height: "+=" + $(window).height(),
             }, 500, function(){
-              //create subcategories 
+              $('.active').append($('<div>').addClass('loading').append($('<img>').attr('src','./img/ajax_loader_blue.gif')));
               $.get("./ajax/get_subcategories.php", {"categoryId" : data.id}, function(d){
                 for(var i = 0;i<d.categories.length;i++){
                     createSubCategoryTile(categoryTile, d.categories[i]);
                 }
             }
-            )});
+            ).done(function(){
+                $('.loading').remove();
+            })});
             $('#categorySearch').attr('id','subCategorySearch').off();
             $('#subCategorySearch').val('');
             searchTiles();
@@ -95,8 +100,8 @@ function createSubCategoryTile(tile, data){
 
         });
           var plotPoints = [];
-          var jqxhr = $.get("./ajax/get_item_info.php", {'categoryId': data.id}, function(d){
-            $('.active > .subCategoryName').append($('<div>').addClass('loading').append($('<img>').attr('src','./img/ajax-loader.gif')));
+          $.get("./ajax/get_item_info.php", {'categoryId': data.id}, function(d){
+            $('.active > .subCategoryName').append($('<div>').addClass('loading').append($('<img>').attr('src','./img/ajax_loader_blue.gif')));
             for(var i = 0;i<d.items.length;i++){
                 var rev = d.items[i]['revenue']/100;
                 var point = [];
