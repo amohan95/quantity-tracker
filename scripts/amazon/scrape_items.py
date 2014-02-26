@@ -8,7 +8,7 @@ import random
 from amazonproduct import API
 from amazonproduct.errors import *
 
-from urllib2 import urlopen, HTTPError
+from urllib2 import urlopen, HTTPError, URLError
 from bs4 import BeautifulSoup
 
 FAKE_LISTINGS = True
@@ -46,12 +46,15 @@ def aggregate_browse_node(id, sub_node=False):
 	print('Found browse node {0}'.format(browse_node))
 	if sub_node:
 		items = []
-		rank = 1
-		for item in result.BrowseNodes.BrowseNode.TopItemSet.TopItem:
-			i = aggregate_item(str(item.ASIN), rank)
-			if i:
-				items.append(i)
-			rank += 1
+		try:
+			rank = 1
+			for item in result.BrowseNodes.BrowseNode.TopItemSet.TopItem:
+				i = aggregate_item(str(item.ASIN), rank)
+				if i:
+					items.append(i)
+				rank += 1
+		except AttributeError, e:
+			print('{0} ({1}) has no top items'.format(browse_node.id, browse_node.name))
 		return {'browse_node' : browse_node, 'items' : items}
 	else:
 		browse_nodes = []
@@ -69,16 +72,17 @@ def aggregate_item( asin, rank):
 		item.name = unicode(item_attributes.Title)
 		item.asin = str(asin)
 		item.rank = rank
+		item.product_group = str(item_attributes.ProductGroup)
 		item.category = int(result.Items.Item.BrowseNodes.BrowseNode.BrowseNodeId)
 		try:
 			item.price = int(result.Items.Item.Offers.Offer.OfferListing.Price.Amount)
 		except AttributeError, e:
-			print('Item "{0}" ({1}) has no Offer'.format(item.name, item.asin))
+			print('Item "{0}" ({1}) has no Offer'.format(str(item.name), item.asin))
 		try:
 			listings = aggregate_item_listings( result.Items.Item.Offers.MoreOffersUrl)	
 			print('Found item {0}'.format(item))
 		except AttributeError, e:
-			print('Item "{0}" ({1}) has no MoreOffersUrl'.format(item.name, item.asin))
+			print('Item "{0}" ({1}) has no MoreOffersUrl'.format(str(item.name), item.asin))
 		print('Found item {0}'.format(item))
 	except AWSError, e:
 		print(e)
@@ -92,6 +96,11 @@ def aggregate_item_listings(base_url):
 			f = urlopen(url, timeout=30)
 			html = f.read()
 			break
+		except URLError, e:
+			if e.reason.errno == 10060:
+				pprint.pprint(e.msg)
+			else:
+				raise
 		except HTTPError, e:
 			if e.code == 503:
 				pprint.pprint(e.msg)
@@ -183,15 +192,19 @@ def save_mysql(listing):
 	c.execute('''CREATE TABLE IF NOT EXISTS listings
              (current_stock, change_stock, price, shipping, date_time, offer_listing_id, item) ''')
 	c.execute('''CREATE TABLE IF NOT EXISTS items
-             (asin, category, name, rank, price) ''')
+             (asin, category, root_sub_category, product_group, name, rank, price) ''')
 	c.execute('SELECT rowid FROM items WHERE asin=?', (listing.item['asin'],))
 	item_id = c.fetchone()
 	if not item_id:
 		c.execute('''INSERT INTO items
-             	  	 VALUES (?, ?, ?, ?, ?)''', (listing.item['asin'], listing.item['category'], listing.item['name'], listing.item['rank'], listing.item['price']))
+             	  	 VALUES (?, ?, ?, ?, ?, ?, ?)''', (listing.item['asin'], listing.item['category'], 0, listing.item['product_group'], listing.item['name'], listing.item['rank'], listing.item['price']))
 		item_id = c.lastrowid
 	else:
 		item_id = item_id[0]
+	c.execute('SELECT sub_root FROM categories WHERE id = ?', (listing.item['category'],))
+	sub_root_category = c.fetchone()
+	if not sub_root_category:
+		sub_root_category = 0
 	c.execute('SELECT current_stock FROM listings WHERE (SELECT MAX(date_time) FROM listings WHERE offer_listing_id = ?)', (listing.offer_listing_id,))
 	current_stock = c.fetchone()
 	change_stock = 0
@@ -227,18 +240,16 @@ if FAKE_LISTINGS:
 				for l in scrape_listings({'item' : item, 'listings' : listings}, i):
 					save_mysql(l)
 else:
-	browse_node = aggregate_browse_node(541966, True)
-	for i in browse_node['items']:
-		for l in scrape_listings(i):
-			save_mysql(l)
-# conn = sqlite3.connect('tracker.db')
-# c = conn.cursor()
-# c.execute('SELECT id FROM categories')
-# for row in c.fetchall():
-# 	browse_node = aggregate_browse_node(row[0], True)
-# 	for i in browse_node['items']:
-# 			for l in scrape_listings(i):
-# 				save_mysql(l)
+	conn = sqlite3.connect('tracker.db')
+	conn.row_factory = sqlite3.Row
+	c = conn.cursor()
+	c.execute('SELECT *, rowid FROM categories WHERE parent is null')
+	for row in c.fetchall():
+		browse_node = aggregate_browse_node(row['id'], True)
+		print('Aggregated ' + browse_node['browse_node'].name)
+		for i in browse_node['items']:
+			for l in scrape_listings(i):
+				save_mysql(l)
 
 
 

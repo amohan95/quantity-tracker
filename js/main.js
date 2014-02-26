@@ -3,7 +3,7 @@ $(document).ready(function(){
         //ajax call to createCategoryTile off list of categories
         $.get("./ajax/get_categories.php", function(d){
             for(var i = 0;i<d.categories.length;i++){
-                createCategoryTile($('#categories'), d.categories[i]);
+                createSubCategoryTile($('#categories'), d.categories[i]);
             }
         });
         searchTiles();
@@ -79,7 +79,7 @@ function createProgressBar(percentage, id){
      .attr('aria-valuenow',percentage).attr('aria-valuemin','0').attr('aria-valuemax','100').attr('id',id).css('width', percentage + '%'));
 }
 function createSubCategoryTile(tile, data){
-    tile.append($('<div>').addClass('tile').append($('<h3>').html(data.name).addClass('subCategoryName')).attr('data-categoryId', data.id).click(function(){
+    tile.append($('<div>').addClass('tile').append($('<h3>').html(data.name).addClass('subCategoryName')).click(function(){
         if($(this).hasClass('active')){
             return;
         }
@@ -95,7 +95,7 @@ function createSubCategoryTile(tile, data){
 
         });
           var plotPoints = [];
-          var jqxhr = $.get("./ajax/get_item_info.php", {'categoryId': data.id}, function(d){
+          var jqxhr = $.get("./ajax/get_item_info.php", {'productGroup': data.name}, function(d){
             $('.active > .subCategoryName').append($('<div>').addClass('loading').append($('<img>').attr('src','./img/ajax-loader.gif')));
             for(var i = 0;i<d.items.length;i++){
                 var rev = d.items[i]['revenue']/100;

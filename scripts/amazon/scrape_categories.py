@@ -37,15 +37,15 @@ BASE_NODES = {
 	2972638011: 'LawnGarden',
 	4991425011: 'Collectibles'
 }
- #'DigitalMusic':	195208011,
- #'GourmetFood':	3580501,
- #'HomeGarden':	285080,
- #'Miscellaneous':	10304191,
- #'MP3Downloads'	:195211011,
- #'OutdoorLiving'	:286168,
- #'PetSupplies':	12923371,
- #'VHS':	404272,
- #'Wireless':	508494,
+#'DigitalMusic':	195208011,
+#'GourmetFood':	3580501,
+#'HomeGarden':	285080,
+#'Miscellaneous':	10304191,
+#'MP3Downloads'	:195211011,
+#'OutdoorLiving'	:286168,
+#'PetSupplies':	12923371,
+#'VHS':	404272,
+#'Wireless':	508494,
 
 SUB_NODES = {}
 
@@ -54,13 +54,14 @@ api = API(access_key_id='AKIAJFHSIA6LLFV26CHA',
 	      associate_tag='6185-7386-2972',
 	      locale='us')
 
+#pprint.pprint(vars(api.browse_node_lookup(281407).BrowseNodes.BrowseNode.Children.BrowseNode))
 def explore_browse_sub_node(node, parent_id, root_id, sub_root_id):
 	SUB_NODES[int(node.BrowseNodeId)] = (str(node.Name), parent_id, root_id, sub_root_id)
 	if sub_root_id == 0:
 		sub_root_id = int(node.BrowseNodeId)
 	print ('Found Sub BrowseNode {0} with id {1} and parent {2}'.format(node.Name, node.BrowseNodeId, parent_id))
 	try:
-		for sub_node in node.BrowseNodes.BrowseNode.Children.BrowseNode:
+		for sub_node in node.BrowseNodes.BrowseNode.Children:
 			browse_node = api.browse_node_lookup(sub_node.BrowseNodeId)
 			explore_browse_sub_node(sub_node, node.BrowseNodeId, root_id, sub_root_id)
 	except AttributeError, e:
@@ -80,12 +81,12 @@ def sub_node_generator():
 conn = sqlite3.connect('tracker.db')
 print('Connected to tracker.db')
 c = conn.cursor()
-c.execute('CREATE TABLE IF NOT EXISTS categories (id, name, parent, root, sub_root)')
-c.executemany('INSERT INTO categories (id, name) VALUES (?,?)', BASE_NODES.items())
-c.executemany('INSERT INTO categories (id, name, parent, root, sub_root) VALUES (?, ?, ?, ?, ?)', sub_node_generator())
+c.execute('CREATE TABLE IF NOT EXISTS old_categories (id, name, parent, root, sub_root)')
+c.executemany('INSERT INTO old_categories (id, name) VALUES (?,?)', BASE_NODES.items())
+c.executemany('INSERT INTO old_categories (id, name, parent, root, sub_root) VALUES (?, ?, ?, ?, ?)', sub_node_generator())
 for node in BASE_NODES.items():
-	print('INSERT INTO categories (id, name) VALUES ({0}, "{1}");'.format(int(node[0]), node[1]))
-	c.execute('INSERT INTO categories (id, name) VALUES ({0}, "{1}")'.format(int(node[0]), node[1]))
+	print('INSERT INTO old_categories (id, name) VALUES ({0}, "{1}");'.format(int(node[0]), node[1]))
+	c.execute('INSERT INTO old_categories (id, name) VALUES ({0}, "{1}")'.format(int(node[0]), node[1]))
 for sub_node in sub_node_generator():
-	print('INSERT INTO categories VALUES ({0},"{1}",{2}, {3}, {4});'.format(int(sub_node[0]), sub_node[1], int(sub_node[2]), int(sub_node[3]), int(sub_node[4])))
-	c.execute('INSERT INTO categories VALUES ({0},"{1}",{2}, {3}, {4})'.format(int(sub_node[0]), sub_node[1], int(sub_node[2]), int(sub_node[3]), int(sub_node[4])))
+	print('INSERT INTO old_categories VALUES ({0},"{1}",{2}, {3}, {4});'.format(int(sub_node[0]), sub_node[1], int(sub_node[2]), int(sub_node[3]), int(sub_node[4])))
+	c.execute('INSERT INTO old_categories VALUES ({0},"{1}",{2}, {3}, {4})'.format(int(sub_node[0]), sub_node[1], int(sub_node[2]), int(sub_node[3]), int(sub_node[4])))
